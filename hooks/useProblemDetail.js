@@ -325,6 +325,9 @@ function buildProblem(problemCode, info, batches, codeToName) {
       inputDescription: problemInfo.inputDescription || undefined,
       outputDescription: problemInfo.outputDescription || undefined,
       sourceLink: problemInfo.sourceLink || undefined,
+      // A walkthrough page for the problem, when one is declared (the crypto problems link
+      // their user guides); the Details panel shows it below Source.
+      walkthroughLink: problemInfo.walkthroughLink || undefined,
     },
     // T35 (#93): the instance the Solvers and Verifier sections show, and
     // the prose format describing it, both straight off allInfo. Kept as

@@ -2,6 +2,7 @@
 //
 // #229: the Details panel: the problem's description, then Input, Output, Source and
 // Contributors as a definition list. No "Reduces to" (the Reduce dropdown covers that).
+// A Walkthrough row sits under Source only for problems that declare a walkthroughLink.
 //
 // "Also known as" is in the design but the backend declares no alternative names for any
 // problem today, so the row only appears when that data exists rather than showing a
@@ -72,6 +73,19 @@ export default function DetailsPanel({ problem }) {
             "Not documented yet."
           )}
         </Row>
+        {overview.walkthroughLink && (
+          <Row label="Walkthrough">
+            <Box
+              component="a"
+              href={overview.walkthroughLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              sx={{ color: "brand.text", textDecoration: "underline" }}
+            >
+              {`${problem.name} walkthrough`}
+            </Box>
+          </Row>
+        )}
         <Row label="Contributors">{overview.contributedBy ?? "Not documented yet."}</Row>
       </Box>
     </Box>
