@@ -21,14 +21,17 @@
  *   (`tests/e2e/helpers.js`), so a hung backend surfaces as the "couldn't reach Redux"
  *   banner inside that window rather than hanging the page until the test itself gives
  *   up.
- * - Compute endpoints (`solve`, `verify`) run a real algorithm, so they get 60s. Long
+ * - Compute endpoints (`solve`, `verify`) run a real algorithm, so they get 75s. Long
  *   enough for a genuine solve on a small instance, short enough that a runaway one
- *   releases the socket instead of being held open indefinitely.
+ *   releases the socket instead of being held open indefinitely. 75s (raised from 60s)
+ *   because a quantum solver may legitimately use the quantum service's full 60s limit,
+ *   and the backend's 70s quantum client sits between the two: each outer layer waits
+ *   longer than the one inside it, so the service's own "timed out" answer gets through.
  *
  * Recorded as a decision on #94.
  */
 const READ_TIMEOUT_MS = 15_000;
-const COMPUTE_TIMEOUT_MS = 60_000;
+const COMPUTE_TIMEOUT_MS = 75_000;
 
 /**
  * Largest request body we will accept, in bytes. Instances and certificates are text;
@@ -82,7 +85,7 @@ const rateLimitBuckets = new Map();
  * `ProblemProvider/reduce` and `ProblemProvider/mapSolution` (#229 stage 3) give the
  * workbench's Result panel the target instance's text and "Map a solution across". Both
  * build a reduction on the backend, so they are compute endpoints: rate-limited, body-capped
- * and on the 60s timeout like the rest of ProblemProvider.
+ * and on the 75s timeout like the rest of ProblemProvider.
  *
  * `Navigation/Reductions/path` (#148) is its own exact entry rather than folded into
  * `Navigation/Reductions` above: it is a genuinely different endpoint (a weighted

@@ -26,7 +26,7 @@
 //
 // Three things that took more care than the call itself:
 //
-//   - Staleness. A brute-force solver can run for the full 60 seconds the
+//   - Staleness. A brute-force solver can run for the full 75 seconds the
 //     proxy allows, and the solver rail is right there to click during it.
 //     Selecting a different solver clears the run, and the result is also
 //     tagged with the solver and the instance it came from, so an answer

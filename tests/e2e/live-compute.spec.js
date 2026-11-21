@@ -54,7 +54,7 @@
 // -----------------------------------------------------------------------
 // #97: "Prefer forcing these at the proxy layer over waiting on real slow
 // computation." An honest timeout test would have to occupy CI for the full
-// 60 seconds T36 (#94) allows a compute request, and an honest
+// 75 seconds T36 (#94) allows a compute request, and an honest
 // backend-is-down test would need the backend actually taken away mid-run.
 // Both of those are slow, and the second is not available inside `rbs
 // integration-test` at all. So the failure tests intercept this app's own
@@ -245,12 +245,12 @@ test("Run explains an unreachable backend instead of failing silently", async ({
 
 test("Run explains the proxy's compute timeout instead of waiting forever", async ({ page }) => {
   page.allowNetworkFailures();
-  // Exactly what pages/api/redux/[...path].js returns when its own 60s
+  // Exactly what pages/api/redux/[...path].js returns when its own 75s
   // compute timeout (T36/#94) fires, rather than a request that really
   // takes a minute.
   await failWith(page, SOLVE_REQUEST, 504, {
-    error: "Redux did not respond within 60s",
-    timeoutMs: 60_000,
+    error: "Redux did not respond within 75s",
+    timeoutMs: 75_000,
   });
 
   await gotoProblemDetail(page, PINNED_PROBLEM, { expect });
@@ -261,7 +261,7 @@ test("Run explains the proxy's compute timeout instead of waiting forever", asyn
   await expect(failure).toBeVisible();
   await expect(failure).toContainText("This took too long");
   // The copy names the real limit, so a wrong number here is a real bug.
-  await expect(failure).toContainText("60 seconds");
+  await expect(failure).toContainText("75 seconds");
   await openPanel(page, "result", { expect });
   await expect(page.locator(RUN_OUTPUT)).toHaveCount(0);
 });

@@ -18,7 +18,7 @@
 //     has switched to a different solver.
 //   - Cancel, via AbortController. Be accurate about what that means: it
 //     stops this browser waiting, and it stops a stale answer arriving. It
-//     does NOT stop the backend computing. The proxy's 60s compute timeout
+//     does NOT stop the backend computing. The proxy's 75s compute timeout
 //     (T36/#94, pages/api/redux/[...path].js) is the only thing that
 //     actually bounds the work, and the copy below says so.
 //   - Turning a failure into copy a person can act on. T36 made the failure
@@ -44,7 +44,7 @@ export const COMPUTE_CANCELLED = "cancelled";
 // The proxy's own limits, repeated here only so the copy can name real
 // numbers. Kept as named constants so the two places stay easy to compare
 // if pages/api/redux/[...path].js ever changes them.
-const PROXY_COMPUTE_TIMEOUT_SECONDS = 60;
+const PROXY_COMPUTE_TIMEOUT_SECONDS = 75;
 const PROXY_BODY_LIMIT_LABEL = "1 MB";
 const PROXY_RATE_LIMIT_PER_MINUTE = 10;
 

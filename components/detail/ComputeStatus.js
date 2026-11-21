@@ -21,12 +21,13 @@
 //
 // These controls announced nothing at all before this task, because they
 // were inert, so this is the first feedback either section has ever given
-// a screen-reader user. A solve can run for up to the proxy's 60 second
+// a screen-reader user. A solve can run for up to the proxy's 75 second
 // compute limit, which is far too long to leave someone guessing.
 
 import Box from "@mui/material/Box";
 import CircularProgress from "@mui/material/CircularProgress";
 import Typography from "@mui/material/Typography";
+import { useEffect, useState } from "react";
 import { COMPUTE_CANCELLED, COMPUTE_FAILED, COMPUTE_RUNNING } from "../../hooks/useComputeRequest";
 
 /**
@@ -35,6 +36,32 @@ import { COMPUTE_CANCELLED, COMPUTE_FAILED, COMPUTE_RUNNING } from "../../hooks/
  */
 export const CANCEL_EXPLANATION =
   "Stopped waiting for an answer. Redux may still be finishing the computation on its end; only its own time limit stops that.";
+
+/** A run shorter than this shows no counter, so a quick solve does not flicker a "1 s". */
+export const ELAPSED_SHOWN_FROM_SECONDS = 2;
+
+/**
+ * Whole seconds since this component mounted, ticking once a second. It is mounted only
+ * while a run is in flight, so every run starts again from 0.
+ *
+ * The count is visible text only. It is deliberately outside the live region: announcing
+ * every second would drown out the announcement a screen-reader user actually needs.
+ */
+function ElapsedSeconds({ id }) {
+  const [startedAt] = useState(() => Date.now());
+  const [now, setNow] = useState(startedAt);
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+  const seconds = Math.floor((now - startedAt) / 1000);
+  if (seconds < ELAPSED_SHOWN_FROM_SECONDS) return null;
+  return (
+    <Typography id={id} variant="body2" aria-hidden="true" sx={{ color: "text.secondary" }}>
+      {seconds} s
+    </Typography>
+  );
+}
 
 /**
  * @param {Object} props
@@ -48,7 +75,9 @@ export const CANCEL_EXPLANATION =
  *   [props.failure] Set when `status` is failed.
  * @param {() => void} props.onCancel Called by the Cancel button.
  * @param {string} props.busyLabel Visible text next to the spinner, e.g.
- *   "Running Clique Brute Force Solver".
+ *   "Running Clique Brute Force Solver". From 2 seconds on, the seconds the run has
+ *   taken so far follow it, so a long run (a quantum solver can take a minute) visibly
+ *   has not frozen.
  */
 export default function ComputeStatus({
   idPrefix,
@@ -79,6 +108,7 @@ export default function ComputeStatus({
           <Typography variant="body2" sx={{ color: "text.secondary" }}>
             {busyLabel}
           </Typography>
+          <ElapsedSeconds id={`${idPrefix}-elapsed`} />
           <Box
             id={`${idPrefix}-cancel-button`}
             component="button"
