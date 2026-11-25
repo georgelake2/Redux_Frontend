@@ -1027,6 +1027,18 @@ ${n > 1 ? probChart(counts, T, null, `Tally of ${n} shots. Each shot lands on a 
     $("hlSwap").onchange = drawCmp;
   }
 
+  // Opened from a Redux run ("Explore this circuit"): start on that run's N.
+  const askedN = Number(new URLSearchParams(window.location.search).get("N"));
+  if (Number.isInteger(askedN) && askedN >= 15 && askedN <= 255) {
+    const select = $("selN");
+    if (![...select.options].some((o) => +o.value === askedN)) {
+      const option = document.createElement("option");
+      option.textContent = String(askedN);
+      select.append(option);
+    }
+    select.value = String(askedN);
+    S.N = askedN;
+  }
   S.hw = HW_EMBED;
   applySrc();
   newRun();

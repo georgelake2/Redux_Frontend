@@ -61,6 +61,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import Link from "@mui/material/Link";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { useCallback, useId, useMemo, useRef, useState } from "react";
@@ -102,6 +103,10 @@ function buildLayout(d3) {
 
   const times = new Set();
   gates.forEach((gate) => times.add(gate.time));
+  // A circuit drawn a column at a time (a frame per step) can name every column it will use, so
+  // the diagram keeps its width and zoom from the first frame to the last.
+  const reserved = d3.metadata?.layoutTimes;
+  if (Array.isArray(reserved)) reserved.filter(Number.isFinite).forEach((time) => times.add(time));
   overlays.forEach((overlay) => {
     times.add(overlay.timeStart);
     times.add(overlay.timeEnd);
@@ -498,6 +503,25 @@ export default function QuantumCircuitRenderer({
   } = layout;
 
   const fitKey = `${qubits.join(",")}|${width}x${height}`;
+  // An optional one-line explanation of this frame (a circuit stepped through gate by gate),
+  // and an optional link to a page in this site that explains the circuit further.
+  const metadata = frame.d3?.metadata ?? {};
+  const caption = typeof metadata.caption === "string" ? metadata.caption : null;
+  const link =
+    typeof metadata.link?.href === "string" && metadata.link.href.startsWith("/")
+      ? { href: metadata.link.href, label: String(metadata.link.label ?? "Learn more") }
+      : null;
+  const captionLine = (caption || link) && (
+    <Typography id={`${scopeId}-caption`} variant="body2" sx={{ color: "text.secondary", px: 0.5 }}>
+      {caption}
+      {caption && link ? " " : null}
+      {link && (
+        <Link href={link.href} underline="hover" sx={{ color: "brand.text", fontWeight: 600 }}>
+          {link.label}
+        </Link>
+      )}
+    </Typography>
+  );
 
   const summaryBody = `quantum circuit with ${qubits.length} qubit${qubits.length === 1 ? "" : "s"} and ${gates.length} gate${gates.length === 1 ? "" : "s"}`;
   const summary = instanceName ? `${instanceName}: ${summaryBody}` : summaryBody;
@@ -688,7 +712,7 @@ export default function QuantumCircuitRenderer({
   );
 
   if (!editable) {
-    return (
+    const surface = (
       <ZoomPanSurface id={scopeId} summary={summary} fitKey={fitKey}>
         {svgCommon}
         {qubits.map((qubitId) => {
@@ -723,12 +747,23 @@ export default function QuantumCircuitRenderer({
         })}
       </ZoomPanSurface>
     );
+    // Without a caption the surface is returned as before, so other circuits lay out unchanged.
+    if (!captionLine) return surface;
+    return (
+      <Box
+        sx={{ display: "flex", flexDirection: "column", gap: 0.5, height: "100%", minHeight: 0 }}
+      >
+        {captionLine}
+        <Box sx={{ flex: 1, minHeight: 0 }}>{surface}</Box>
+      </Box>
+    );
   }
 
   const addQubitZoneTop = (classicalRowY ?? lastQubitY) + ROW_SPACING / 2;
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+      {captionLine}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <ZoomPanSurface id={scopeId} summary={summary} fitKey={fitKey}>
           {svgCommon}
