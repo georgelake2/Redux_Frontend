@@ -41,8 +41,12 @@ export function useFrameEdits({ backendType, baseFrame, baseInstance, problemNam
   const isGraph = universalType === "graph";
   const isRecursiveSet = universalType === "recursiveSet";
   const isQuantumCircuit = universalType === "quantumCircuit";
+  // A circuit can mark itself read-only (d3.metadata.readOnly): a picture of what a solver
+  // runs, such as RSA's Shor's circuit, rather than an instance the user builds.
+  const readOnlyCircuit = isQuantumCircuit && baseFrame?.d3?.metadata?.readOnly === true;
   const editable =
     Boolean(baseFrame) &&
+    !readOnlyCircuit &&
     (isBooleanSatisfiability || isGraph || isRecursiveSet || isQuantumCircuit);
   // "3SAT" is the backend problemName of SAT3; SAT itself has no per-clause literal cap.
   const maxLiteralsPerClause =
